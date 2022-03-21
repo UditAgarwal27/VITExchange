@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const randtoken = require('rand-token');
 
 const {validateuserregistraation, validateuserlogin, validateUserLogout }= require('../Middleware/uservalidation');
+const {generateAccessToken} = require('../Services/token');
 
 const usermodel = require('../Models/usermodel');
 const tokenmodel = require('../Models/tokenmodel');
@@ -34,14 +35,7 @@ router.post('/register', validateuserregistraation, async(req, res)=>{
 
 
     //GENRATE USER TOKEN AND SAVE IT IN THE DATABASE;
-    const expiresin = new Date().getTime() + parseInt(process.env.access_token_expity_time);
-    const accesstoken = jwt.sign({regno: regno}, process.env.jwt_secret_key, {expiresIn: expiresin});
-    if(!accesstoken) return res.status(500).json({msg:"Error in generating access token"});
-    const refreshtoken = randtoken.uid(256);
-    const newtoken = new tokenmodel({
-        regno:regno.toLowerCase(),
-        refreshtoken:refreshtoken
-    })
+    const {accesstoken, newtoken, expiresin} = generateAccessToken(regno);
     await newtoken.save()
 
 
@@ -69,14 +63,7 @@ router.get('/login', validateuserlogin, async(req, res)=>{
 
 
     //GENRATE USER TOKEN AND SAVE IT IN THE DATABASE;
-    const expiresin = new Date().getTime() + parseInt(process.env.access_token_expity_time);
-    const accesstoken = jwt.sign({regno: regno}, process.env.jwt_secret_key, {expiresIn: expiresin});
-    if(!accesstoken) return res.status(500).json({msg:"Error in generating access token"});
-    const refreshtoken = randtoken.uid(256);
-    const newtoken = new tokenmodel({
-        regno:regno,
-        refreshtoken:refreshtoken
-    })
+    const {accesstoken, newtoken, expiresin} = generateAccessToken(regno);
     await newtoken.save()
 
     //RETURN THE DATA BACK TO THE USER;
@@ -93,7 +80,6 @@ router.get('/login', validateuserlogin, async(req, res)=>{
 
 // LOGOUT A USER.
 router.delete("/logout", validateUserLogout, async(req, res)=>{
-
     const regno = req.body.regno.toLowerCase();
 
     // //CHECK IF USER WITH THIS REGSITARTION NUMBER EXIST OR NOT
@@ -107,7 +93,7 @@ router.delete("/logout", validateUserLogout, async(req, res)=>{
     // //FIND THE USER AND DELETE THE TOKEN RECORD OF THAT USER;
     tokenmodel.findOneAndDelete({regno: regno.toLowerCase()})
     .then((deletedtoken)=>{
-        if(deletedtoken) return res.status(200).json({
+        if(deletedtoken) res.status(200).json({
             success: true,
             msg:"The user has successfully logged out"
         })
