@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 
 const tokenschema = mongoose.Schema({
-    regno:{
+    reg_no:{
         type:String,
         required:true
     },
-    refreshtoken:{
+    refresh_token:{
         type:String,
         required:true
     }

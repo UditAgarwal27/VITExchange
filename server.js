@@ -12,11 +12,11 @@ app.use(express.json());
 //ROUTES
 
 //FOR GENERATING A NEW ACCESS TOKEN FROM REFRESH TOKEN
-const tokenRoute = require('./Controller/utils/generateNewAccessToken');
-app.use("/generateNewToken", tokenRoute)
+const token_route = require('./Controller/utils/generate_new_access_token');
+app.use("/api/generate-new-token", token_route)
 
 //USER ROUTES
-const userRoute = require('./Controller/user');
-app.use("/user", userRoute);
+const user_route = require('./Controller/user');
+app.use("/api/user", user_route);
 
 module.exports = app;
